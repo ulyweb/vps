@@ -7,55 +7,56 @@ Welcome to my complete self-hosted ecosystem\! This repository contains the arch
 Below is the visual map of how the server operates, showing traffic flow from the outside internet, through the security layers and Nginx Proxy Manager, down to the individual Docker containers.
 
 ```mermaid
-graph TD  
-    %% Define Styling  
-    classDef internet fill:\#0ea5e9,stroke:\#0284c7,stroke-width:2px,color:\#fff  
-    classDef proxy fill:\#f59e0b,stroke:\#d97706,stroke-width:2px,color:\#fff  
-    classDef app fill:\#10b981,stroke:\#059669,stroke-width:2px,color:\#fff  
-    classDef db fill:\#6366f1,stroke:\#4f46e5,stroke-width:2px,color:\#fff  
-    classDef security fill:\#ef4444,stroke:\#dc2626,stroke-width:2px,color:\#fff
+graph TD
+    %% Define Styling
+    classDef internet fill:#0ea5e9,stroke:#0284c7,stroke-width:2px,color:#fff
+    classDef proxy fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    classDef app fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    classDef db fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+    classDef security fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
 
-    User\["👤 You (Web Browser / Phone Apps)"\]:::internet  
-    DuckDNS\["🌐 DuckDNS (Domain Resolution)"\]:::internet
+    User["👤 You (Web Browser / Phone Apps)"]:::internet
+    DuckDNS["🌐 DuckDNS (Domain Resolution)"]:::internet
 
-    subgraph Contabo\_VPS \["Contabo Ubuntu VPS Engine"\]  
-        UFW\["🛡️ UFW Firewall\\n(Ports 80, 443, 81, 22, 3478)"\]:::security  
-        Fail2Ban\["🚨 Fail2Ban\\n(Brute Force Protection)"\]:::security
+    subgraph Contabo_VPS ["Contabo Ubuntu VPS Engine"]
+        UFW["🛡️ UFW Firewall\n(Ports 80, 443, 81, 22, 3478)"]:::security
+        Fail2Ban["🚨 Fail2Ban\n(Brute Force Protection)"]:::security
 
-        NPM\["🔄 Nginx Proxy Manager\\n(SSL Certificates & Routing)"\]:::proxy
+        NPM["🔄 Nginx Proxy Manager\n(SSL Certificates & Routing)"]:::proxy
 
-        subgraph Docker\_Environment \["🐳 Secure Docker Network"\]  
-            Nextcloud\["☁️ Nextcloud AIO\\nPort 11000"\]:::app  
-            Vaultwarden\["🔐 Vaultwarden\\nPort 8222"\]:::app  
-            Immich\["📸 Immich\\nPort 2283"\]:::app  
-            Wealthfolio\["📈 Wealthfolio\\nPort 8088"\]:::app  
-            Sure\["💰 Sure Finance\\nPort 3000"\]:::app  
-            Firefox\["🦊 Firefox (Cloud Browser)\\nPort 5800"\]:::app
+        subgraph Docker_Environment ["🐳 Secure Docker Network"]
+            Nextcloud["☁️ Nextcloud AIO\nPort 11000"]:::app
+            Vaultwarden["🔐 Vaultwarden\nPort 8222"]:::app
+            Immich["📸 Immich\nPort 2283"]:::app
+            Wealthfolio["📈 Wealthfolio\nPort 8088"]:::app
+            Sure["💰 Sure Finance\nPort 3000"]:::app
+            Firefox["🦊 Firefox (Cloud Browser)\nPort 5800"]:::app
 
-            NC\_DB\[("Nextcloud Data\\nPostgres & Redis")\]:::db  
-            Sure\_DB\[("Sure Data\\nPostgres & Redis")\]:::db  
-            Immich\_DB\[("Immich Data\\nPostgres & Machine Learning")\]:::db  
-        end  
+            NC_DB[("Nextcloud Data\nPostgres & Redis")]:::db
+            Sure_DB[("Sure Data\nPostgres & Redis")]:::db
+            Immich_DB[("Immich Data\nPostgres & Machine Learning")]:::db
+        end
     end
 
-    %% Traffic Flow  
-    User \--\>|"Types URL"| DuckDNS  
-    DuckDNS \--\>|"Resolves to VPS IP"| UFW  
-    Fail2Ban \-.-\>|"Bans Bad IPs"| UFW  
-    UFW \--\>|"Port 443 (Secure HTTPS)"| NPM
+    %% Traffic Flow
+    User -->|"Types URL"| DuckDNS
+    DuckDNS -->|"Resolves to VPS IP"| UFW
+    Fail2Ban -.->|"Bans Bad IPs"| UFW
+    UFW -->|"Port 443 (Secure HTTPS)"| NPM
 
-    %% Proxy Routing  
-    NPM \--\>|"cloudvps.duckdns.org"| Nextcloud  
-    NPM \--\>|"vaultvps.duckdns.org"| Vaultwarden  
-    NPM \--\>|"picvps.duckdns.org"| Immich  
-    NPM \--\>|"wealthvps.duckdns.org"| Wealthfolio  
-    NPM \--\>|"surevps.duckdns.org"| Sure  
-    NPM \--\>|"webvps.duckdns.org"| Firefox
+    %% Proxy Routing
+    NPM -->|"cloudvps.duckdns.org"| Nextcloud
+    NPM -->|"vaultvps.duckdns.org"| Vaultwarden
+    NPM -->|"picvps.duckdns.org"| Immich
+    NPM -->|"wealthvps.duckdns.org"| Wealthfolio
+    NPM -->|"surevps.duckdns.org"| Sure
+    NPM -->|"webvps.duckdns.org"| Firefox
 
-    %% Database Connections  
-    Nextcloud \--- NC\_DB  
-    Sure \--- Sure\_DB  
-    Immich \--- Immich\_DB
+    %% Database Connections
+    Nextcloud --- NC_DB
+    Sure --- Sure_DB
+    Immich --- Immich_DB
+
 ```
 
 ## **🛠️ The Setup Timeline & Automated Scripts**
