@@ -70,7 +70,6 @@ This environment is built in sequential phases. You can deploy these by creating
 * **Script Name:** nc-master-install.sh
 
 \<details\>
-
 \<summary\>\<b\>Click to expand the full \<code\>nc-master-install.sh\</code\> code\</b\>\</summary\>
 
 \#\!/bin/bash
