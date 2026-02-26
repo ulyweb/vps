@@ -7,7 +7,9 @@ Welcome to my complete self-hosted ecosystem\! This repository contains the arch
 Below is the visual map of how the server operates, showing traffic flow from the outside internet, through the security layers and Nginx Proxy Manager, down to the individual Docker containers.
 
 
+
 ```mermaid
+
 graph TD  
     %% Define Styling  
     classDef internet fill:\#0ea5e9,stroke:\#0284c7,stroke-width:2px,color:\#fff  
