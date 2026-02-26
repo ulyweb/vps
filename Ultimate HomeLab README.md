@@ -71,7 +71,7 @@ This environment is built in sequential phases. You can deploy these by creating
 
 <details>
 <summary><b>Click to expand the full 'nc-master-install.sh' code</b></summary>
-
+````
 #!/bin/bash
 
 clear  
@@ -255,8 +255,8 @@ sudo systemctl restart fail2ban
 echo "=========================================================================="  
 echo "                        INSTALLATION COMPLETE\!                            "  
 echo "=========================================================================="
-
-\</details\>
+````
+</details>
 
 ### **Phase 2: Deploying Vaultwarden & Immich**
 
