@@ -8,8 +8,7 @@ Below is the visual map of how the server operates, showing traffic flow from th
 
 
 
-```mermaid
-
+````mermaid
 graph TD  
     %% Define Styling  
     classDef internet fill:\#0ea5e9,stroke:\#0284c7,stroke-width:2px,color:\#fff  
@@ -59,7 +58,8 @@ graph TD
     Nextcloud \--- NC\_DB  
     Sure \--- Sure\_DB  
     Immich \--- Immich\_DB
-```
+
+````
 
 
 ## **🛠️ The Setup Timeline & Automated Scripts**
