@@ -1,6 +1,7 @@
 🚀 Self-Hosted VPS HomeLab Architecture
 
 Welcome to the complete self-hosted ecosystem! This guide contains the architecture, automated deployment scripts, and deployment timeline for a secure, containerized Ubuntu VPS. This setup replaces Google Drive, Google Photos, Bitwarden, and provides a blazing-fast root-level file manager.
+
 🗺️ Architecture DiagramBelow is the visual map of how the server operates, showing traffic flow from the outside internet (using a custom domain), through the security layers and Nginx Proxy Manager, down to the individual Docker containers.(Note: If you copy/paste this code block into a Mermaid Live Editor or GitHub, it will instantly generate the visual diagram!)
 
 ```mermaid
