@@ -1,0 +1,52 @@
+Prompt: Navigate my Taxes
+1. Review my prepared 2025 tax return for errors
+I’ve already prepared my 2025 federal and state tax returns. Review it for errors, missed deductions, and miscalculations that could lead to overpayment. Double-check that all forms, schedules, and line items are accurate and consistent with each other. Let’s start by having a conversation where you guide me through the tax forms I need to provide and ask for my completed 2025 return. Then let’s have a conversation to ensure I’ve shared all the relevant files and have completed my return accurately.
+
+2. Prepare my 2025 taxes for my review
+Prepare my federal tax return for 2025. Start by asking me for all my relevant tax forms and guiding me through which forms I may need to upload. Then let’s have a conversation about my income, deductions, credits, filing status, and any other pertinent information that you would need to appropriately file my taxes. Lastly, fill out the actual IRS forms and give me the completed PDFs.
+
+3. Calculate my 2025 self-employment tax and estimated payments
+I’m a freelancer with 1099 income. Calculate my 2025 self-employment tax, the deductible half, and figure out whether I should be making quarterly estimated payments to avoid an underpayment penalty. Start with a conversation on the relevant tax forms and guiding me through which forms I may need to upload. Then let’s have a conversation my income, deductions, credits, filing status, and any other pertinent information that you would need to make the appropriate determination. Finally, produce a pdf that summarizes your findings.
+
+4. I got married this year - should we file jointly or separately?
+My spouse and I got married in 2025. Walk me through the pros and cons of filing jointly vs. separately, compare the tax impact of each option given our incomes and deductions, and recommend the best filing status for our situation. Let’s start by having a conversation on any relevant information or tax forms that you need from me to guide me through this question and for making the best tax decision for my spouse and me.
+
+5. How should I report my stock compensation when filing my taxes?
+Review my 2025 stock-based transactions (RSUs, ISOs, ESPPs, etc.). Start by asking me for all my relevant tax forms and guiding me through which forms I may need to upload. Explain how each type is taxed for 2025, help me figure out the cost basis for shares I sold this year, and tell me which forms I need to file. Flag anything that could trigger AMT. Once completed, generate a clear and detailed summary pdf that outlines the tax implications for each of my transactions.
+
+Prompt: Help me learn
+1. Turn my notes into a polished write-up
+Take my rough notes and turn them into a polished, well-structured write-up or memo I can share with my team
+
+2. Help me deeply understand a confusing topic
+I want to deeply understand a topic that keeps coming up in my work, help me go from confused to confident
+
+Prompt: Create a prototype
+1. Build a web app with user auth and a database
+Build me a web app with user authentication, a database, and a clean UI, deploy it live, and walk me through the architecture
+
+
+Prompt: Recruiting
+1. Monitor job postings at target companies
+Here are the companies I want to monitor: [list company names]. Track their open job postings for [role type, e.g., Data Scientists, Product Managers, Engineers] across all major job boards. For each posting, capture: company name, role title, location, seniority level, date posted, and job URL. Flag new postings that appeared in the last 7 days. Present as a sortable table grouped by company, and set up a weekly scan to notify me of new openings.
+
+
+Prompt: Monitor the situation
+1.Track a market trend with weekly reports
+Track a market or trend on an ongoing basis and send me a weekly report on what shifted and why it matters
+
+2.Wathc industry news and flag important stories
+Watch the news in my industry every day, filter out the noise, and flag the stories worth my attention
+
+3.Watch for job postings at target companies
+Monitor job boards and career pages at companies I am interested in and alert me whenever a relevant role is posted
+
+4.Track regulatory changes in my industry
+Monitor regulatory and policy changes that could affect my business, summarize what changed, and tell me what I need to do about it
+
+5.Send me a morning briefing on a topic every weekday
+Follow a topic I care about and send me a morning briefing every weekday so I never fall behind
+
+Prompt: Organize my life
+1. Create a budget tracker from my sending
+Help me build a budget tracker spreadsheet that categorizes my spending, shows where my money is going, and flags areas to cut back
