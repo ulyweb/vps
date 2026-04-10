@@ -1,8 +1,11 @@
-🚀 Self-Hosted VPS HomeLab Architecture
+> [!NOTE]
+> # 🚀 Self-Hosted VPS HomeLab Architecture
+> ### ***Welcome to the complete self-hosted ecosystem! This guide contains the architecture, automated deployment scripts, and deployment timeline for a secure, containerized Ubuntu VPS. This setup replaces Google Drive, Google Photos, Bitwarden, and provides a blazing-fast root-level file manager.***
 
-Welcome to the complete self-hosted ecosystem! This guide contains the architecture, automated deployment scripts, and deployment timeline for a secure, containerized Ubuntu VPS. This setup replaces Google Drive, Google Photos, Bitwarden, and provides a blazing-fast root-level file manager.
 
-🗺️ Architecture DiagramBelow is the visual map of how the server operates, showing traffic flow from the outside internet (using a custom domain), through the security layers and Nginx Proxy Manager, down to the individual Docker containers.(Note: If you copy/paste this code block into a Mermaid Live Editor or GitHub, it will instantly generate the visual diagram!)
+> [!tip]
+> # 🗺️ Architecture Diagram
+>> ***Below is the visual map of how the server operates, showing traffic flow from the outside internet (using a custom domain), through the security layers and Nginx Proxy Manager, down to the individual Docker containers.***
 
 ```mermaid
 graph TD
@@ -50,7 +53,32 @@ graph TD
     Immich --- Immich_DB
 ```
 
-🗺️ The Setup Timeline (How To Build It)Here is the exact chronological order of how to engineer this machine from a fresh installation:Phase 1: The Foundation & SecurityProvision VPS: Spin up a fresh Ubuntu 22.04 or 24.04 machine.UFW Firewall: Lock down the server so only specific doors are open (22, 80, 443, 81, 3478).Fail2Ban: Install a security guard tailored for Docker that watches logs and permanently blocks any IP address exhibiting malicious behavior or scanning.Phase 2: The Core InfrastructureDocker: Install the Docker engine to act as the containerized operating system.Nginx Proxy Manager (NPM): Deploy the "Traffic Cop" on ports 80 and 443. NPM catches all incoming traffic, checks the subdomain, applies a free Let's Encrypt SSL certificate, and securely routes it to the right app.Phase 3: The Application LayerNextcloud AIO: Deploy the master container on port 8080, which then automatically downloads and configures Apache, PostgreSQL, Redis, and Nextcloud Talk.Vaultwarden: Deploy the lightweight Rust port of Bitwarden, enabling Websockets for real-time password syncing to browser extensions.Immich: Deploy the high-performance Google Photos replacement, complete with a dedicated Postgres database, Redis cache, and Machine Learning container for facial recognition.FileBrowser Quantum: Deploy a blazing-fast web-based file manager fork with a modern UI. Mapped directly to the host OS root directory (/) to provide full administrative file access via the web UI.🛠️ The Automated Deployment ScriptsBelow are the bash scripts used to deploy the environment. You can deploy these by creating .sh files on your Ubuntu server, pasting the code below into them, and running them via bash filename.sh.Note: These scripts are fully interactive. They will ask you for your IP address and custom domains, and adapt the instructions on the fly.1. Core Infrastructure & Nextcloud (The Master Script)Sets up System Updates, Docker, UFW Firewall, Fail2ban, Nginx Proxy Manager, and Nextcloud AIO.<details><summary><b>Click to expand <code>nc-master-install.sh</code></b></summary>#!/bin/bash
+> [!tip]
+> # 🗺️ The Setup Timeline
+```
+(How To Build It)
+Here is the exact chronological order of how to engineer this machine from a fresh installation:
+Phase 1: The Foundation & SecurityProvision 
+VPS: Spin up a fresh Ubuntu 22.04 or 24.04 machine.
+UFW Firewall: Lock down the server so only specific doors are open (22, 80, 443, 81, 3478).
+Fail2Ban: Install a security guard tailored for Docker that watches logs and permanently blocks any IP address exhibiting malicious behavior or scanning.
+Phase 2: The Core Infrastructure
+Docker: Install the Docker engine to act as the containerized operating system.
+Nginx Proxy Manager (NPM): Deploy the "Traffic Cop" on ports 80 and 443. NPM catches all incoming traffic, checks the subdomain, applies a free Let's Encrypt SSL certificate, and securely routes it to the right app.
+Phase 3: The Application Layer
+Nextcloud AIO: Deploy the master container on port 8080, which then automatically downloads and configures Apache, PostgreSQL, Redis, and Nextcloud Talk.
+Vaultwarden: Deploy the lightweight Rust port of Bitwarden, enabling Websockets for real-time password syncing to browser extensions.
+Immich: Deploy the high-performance Google Photos replacement, complete with a dedicated Postgres database, Redis cache, and Machine Learning container for facial recognition.
+FileBrowser Quantum: Deploy a blazing-fast web-based file manager fork with a modern UI. Mapped directly to the host OS root directory (/) to provide full administrative file access via the web UI.
+```
+> [!tip]
+> # 🛠️ The Automated Deployment Scripts
+```
+Below are the bash scripts used to deploy the environment. You can deploy these by creating .sh files on your Ubuntu server, pasting the code below into them, and running them via bash filename.sh.
+Note: These scripts are fully interactive. They will ask you for your IP address and custom domains, and adapt the instructions on the fly.
+1. Core Infrastructure & Nextcloud (The Master Script)Sets up System Updates, Docker, UFW Firewall, Fail2ban, Nginx Proxy Manager, and Nextcloud AIO.
+```
+   <details><summary><b>Click to expand <code>nc-master-install.sh</code></b></summary>#!/bin/bash
 
 clear
 echo "================================================================="
