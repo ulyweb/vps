@@ -90,3 +90,34 @@ Then add a proxy host in NPM pointing to the container name and port.
 - Ubuntu 22.04 or 24.04
 - A domain with DNS you control
 - Run as a non-root sudo user (not root)
+
+
+---
+
+
+  SYSTEM-PROMPT.md — The Job Description / Rulebook
+  - What the stack is and how it works                                                                                                          
+  - The Golden Rule (npm_default + expose, never ports)
+  - Architecture overview                                                                                                                       
+  - All known issues and hard-won lessons                                                                                                       
+  - The 10 rules for the AI to follow                                                                                                           
+  - How to start a new session                                                                                                                  
+                                                                                                                                                
+  ARTIFACT.md — The Blueprint / Built House      
+  - Full story of how this was built and why                                                                                                    
+  - Complete infrastructure map                                                                                                                 
+  - Every service's exact docker-compose.yml (copy-paste ready)
+  - NPM SQLite seeding code                                                                                                                     
+  - NPM API proxy creation code                                                                                                                 
+  - UFW + Fail2Ban config                
+  - Day-to-day VPS commands reference                                                                                                           
+  - A blank template for adding any new service  
+  - A changelog table to update as new services are added                                                                                       
+                                                                                                                                                
+  How uses it:                                                                                                                   
+                                                                                                                                                
+  When they want to add a new service, they paste both files into their AI and say:                                                             
+                                                 
+  ▎ "I want to add [SERVICE NAME] to my stack. Here is my full context: [paste ARTIFACT.md + SYSTEM-PROMPT.md]"                                 
+                                                 
+  The AI has everything it needs — no re-explaining, no guessing.   
