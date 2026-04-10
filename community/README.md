@@ -116,6 +116,8 @@ Then add a proxy host in NPM pointing to the container name and port.
   - A blank template for adding any new service  
   - A changelog table to update as new services are added                                                                                       
 
+---
+
 > [!tip]
 > ## How uses it:                                                                                                                   
                                                                                                                                                 
