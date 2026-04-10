@@ -1,4 +1,5 @@
-# VPS Community Installer
+> [!NOTE]
+> # VPS Community Installer
 
 A single-command self-hosted homelab stack deployer for Ubuntu 22.04 / 24.04 VPS.
 
@@ -13,8 +14,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/c
 ```
 
 ---
-
-## What It Installs
+> [!tip]
+> ## What It Installs
 
 **Nginx Proxy Manager** is always installed — it is the SSL gateway and reverse proxy that routes all your subdomains. Every other service is optional.
 
@@ -28,8 +29,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/c
 | **Portainer** | Docker container management dashboard |
 
 ---
-
-## Before You Run
+> [!tip]
+> ## Before You Run
 
 1. **Get a VPS** running Ubuntu 22.04 or 24.04 (non-root sudo user required)
 2. **Point your DNS** — create A records for each subdomain you want, all pointing to your VPS IP
@@ -38,8 +39,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/c
 3. **Run the one-liner** above — the wizard will ask for everything it needs
 
 ---
-
-## What the Wizard Asks
+> [!tip]
+> ## What the Wizard Asks
 
 - Your VPS public IP address
 - Your base domain (e.g. `example.com`)
@@ -51,16 +52,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/c
 All services are deployed on a shared Docker network (`npm_default`) with Let's Encrypt SSL handled automatically through NPM.
 
 ---
-
-## Security
+> [!tip]
+> ## Security
 
 - UFW firewall configured (only ports 80, 443, 81, 22 open)
 - Fail2Ban installed with Docker-aware rules (SSH + web brute force protection)
 - All containers use `expose` only — nothing is directly reachable from the internet except through NPM's SSL proxy
 
 ---
-
-## Adding a Service Later
+> [!tip]
+> ## Adding a Service Later
 
 Any Docker image can be added to the stack using this pattern:
 
@@ -84,8 +85,8 @@ networks:
 Then add a proxy host in NPM pointing to the container name and port.
 
 ---
-
-## Requirements
+> [!tip]
+> ## Requirements
 
 - Ubuntu 22.04 or 24.04
 - A domain with DNS you control
@@ -94,16 +95,17 @@ Then add a proxy host in NPM pointing to the container name and port.
 
 ---
 
-
-  SYSTEM-PROMPT.md — The Job Description / Rulebook
+> [!tip]
+> ## SYSTEM-PROMPT.md — The Job Description / Rulebook
   - What the stack is and how it works                                                                                                          
   - The Golden Rule (npm_default + expose, never ports)
   - Architecture overview                                                                                                                       
   - All known issues and hard-won lessons                                                                                                       
   - The 10 rules for the AI to follow                                                                                                           
   - How to start a new session                                                                                                                  
-                                                                                                                                                
-  ARTIFACT.md — The Blueprint / Built House      
+
+> [!tip]                                                                                                                                                
+> ## ARTIFACT.md — The Blueprint / Built House      
   - Full story of how this was built and why                                                                                                    
   - Complete infrastructure map                                                                                                                 
   - Every service's exact docker-compose.yml (copy-paste ready)
@@ -113,8 +115,9 @@ Then add a proxy host in NPM pointing to the container name and port.
   - Day-to-day VPS commands reference                                                                                                           
   - A blank template for adding any new service  
   - A changelog table to update as new services are added                                                                                       
-                                                                                                                                                
-  How uses it:                                                                                                                   
+
+> [!tip]
+> ## How uses it:                                                                                                                   
                                                                                                                                                 
   When they want to add a new service, they paste both files into their AI and say:                                                             
                                                  
