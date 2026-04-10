@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VPS Homelab Stack — Architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg:       #0f172a;
+      --surface:  #1e293b;
+      --border:   #334155;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --accent:   #38bdf8;
+      --green:    #34d399;
+      --amber:    #fbbf24;
+      --red:      #f87171;
+      --purple:   #a78bfa;
+      --radius:   12px;
+      --glow:     0 0 20px rgba(56,189,248,0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background grid ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+      animation: gridPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes gridPulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1;   }
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Scroll-reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 3.5rem 1rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .header-glow {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(56,189,248,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      color: #0f172a;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1.2rem;
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(56,189,248,0);  }
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #fff 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      max-width: 620px;
+      margin: 0 auto 2rem;
+      font-size: 1rem;
+    }
+
+    /* ── Copy command ── */
+    .cmd-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      max-width: 100%;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .cmd-wrap:hover {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    .cmd-label {
+      background: rgba(56,189,248,0.15);
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.65rem 0.9rem;
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .cmd-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--green);
+      padding: 0.65rem 1rem;
+      flex: 1;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      user-select: all;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      border-left: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+
+    .copy-btn:hover { color: var(--accent); background: rgba(56,189,248,0.08); }
+    .copy-btn.copied { color: var(--green); }
+
+    /* ── Section headings ── */
+    section { margin-bottom: 3rem; }
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── Diagram container ── */
+    .diagram-outer {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1rem;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .diagram-outer:hover {
+      border-color: rgba(56,189,248,0.4);
+      box-shadow: var(--glow);
+    }
+
+    .diagram-scroll {
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .mermaid {
+      display: inline-block;
+      min-width: 620px;
+      transition: transform 0.3s;
+    }
+
+    /* Diagram toolbar */
+    .diagram-toolbar {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .toolbar-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .toolbar-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(56,189,248,0.08);
+    }
+
+    /* Hover tooltip system on diagram nodes (post-render) */
+    .diagram-outer svg .node rect,
+    .diagram-outer svg .node circle,
+    .diagram-outer svg .node polygon,
+    .diagram-outer svg .node path {
+      transition: filter 0.2s, opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .diagram-outer svg .node:hover rect,
+    .diagram-outer svg .node:hover circle,
+    .diagram-outer svg .node:hover polygon {
+      filter: brightness(1.3) drop-shadow(0 0 8px rgba(56,189,248,0.6));
+    }
+
+    /* SVG edge animation */
+    .diagram-outer svg .flowchart-link {
+      stroke-dasharray: 6 3;
+      animation: dashFlow 1.5s linear infinite;
+    }
+
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -18; }
+    }
+
+    /* Node tooltip popup */
+    #node-tooltip {
+      position: fixed;
+      background: #0d1117;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 9999;
+      max-width: 220px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    #node-tooltip.show { opacity: 1; }
+    #node-tooltip strong { color: var(--accent); display: block; margin-bottom: 0.2rem; }
+
+    /* ── Fullscreen modal ── */
+    #fs-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,15,28,0.97);
+      z-index: 10000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    #fs-modal.open { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #fs-modal .fs-toolbar {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    #fs-modal .fs-title {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+
+    #fs-close {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    #fs-close:hover { color: var(--red); border-color: var(--red); }
+
+    #fs-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      overflow: auto;
+      max-width: 1200px;
+      width: 100%;
+      max-height: 85vh;
+      text-align: center;
+    }
+
+    #fs-content svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .fs-hint {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── Layer cards ── */
+    .layer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .layer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+
+    .layer-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .l-dns:hover   { border-color: var(--accent); }
+    .l-fw:hover    { border-color: var(--red);    }
+    .l-f2b:hover   { border-color: var(--red);    }
+    .l-npm:hover   { border-color: var(--amber);  }
+    .l-docker:hover{ border-color: var(--green);  }
+
+    .layer-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+
+    .layer-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .layer-desc { color: var(--muted); font-size: 0.85rem; }
+
+    .l-dns  .layer-label { color: var(--accent); }
+    .l-fw   .layer-label { color: var(--red);    }
+    .l-f2b  .layer-label { color: var(--red);    }
+    .l-npm  .layer-label { color: var(--amber);  }
+    .l-docker .layer-label { color: var(--green); }
+
+    /* ── Services table ── */
+    .services-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .services-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .services-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      transition: background 0.2s;
+    }
+
+    .services-table tr:last-child td { border-bottom: none; }
+
+    .services-table tr {
+      transition: background 0.2s;
+      cursor: default;
+    }
+
+    .services-table tr:hover td { background: rgba(255,255,255,0.04); }
+
+    .svc-name { font-weight: 700; color: #fff; }
+
+    .svc-sub {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: rgba(56,189,248,0.08);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(56,189,248,0.2);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .services-table tr:hover .svc-sub {
+      background: rgba(56,189,248,0.15);
+      border-color: rgba(56,189,248,0.5);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1;   transform: scale(1);   }
+      50%       { opacity: 0.6; transform: scale(0.85); }
+    }
+
+    /* ── Golden Rule ── */
+    .rule-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .rule-box:hover {
+      border-left-color: var(--accent);
+      box-shadow: -4px 0 20px rgba(56,189,248,0.15);
+    }
+
+    .rule-box p {
+      color: var(--muted);
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+    }
+
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--green);
+      position: relative;
+    }
+
+    /* ── Deploy section ── */
+    .deploy-box {
+      background: linear-gradient(135deg, rgba(12,35,64,0.8) 0%, rgba(15,23,42,0.9) 100%);
+      border: 1px solid rgba(56,189,248,0.4);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .deploy-box:hover { box-shadow: var(--glow); }
+
+    .deploy-box::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at center, rgba(56,189,248,0.06) 0%, transparent 60%);
+      animation: deployPulse 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes deployPulse {
+      0%, 100% { transform: scale(1);   opacity: 1; }
+      50%       { transform: scale(1.1); opacity: 0.7; }
+    }
+
+    .deploy-box h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .deploy-box > p {
+      color: var(--muted);
+      font-size: 0.87rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .deploy-cmd-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 700px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+
+    .deploy-cmd-wrap:hover {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    .deploy-cmd-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      color: var(--green);
+      padding: 0.8rem 1rem;
+      flex: 1;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      user-select: all;
+    }
+
+    .deploy-copy-btn {
+      background: rgba(56,189,248,0.1);
+      border: none;
+      border-left: 1px solid var(--border);
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0.8rem 1rem;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+
+    .deploy-copy-btn:hover { background: rgba(56,189,248,0.2); }
+    .deploy-copy-btn.copied { color: var(--green); }
+
+    .req-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .req-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .req-pill:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Toast notification ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 99999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.7rem; }
+      .mermaid  { min-width: 500px;  }
+      .cmd-text { font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="node-tooltip"></div>
+
+<div id="toast">✓ Copied to clipboard!</div>
+
+<div id="fs-modal">
+  <div class="fs-toolbar">
+    <span class="fs-title">🗺️ Architecture Diagram — Full View</span>
+    <button id="fs-close">✕ Close &nbsp;<small style="opacity:0.5">(ESC)</small></button>
+  </div>
+  <div id="fs-content"></div>
+  <p class="fs-hint">Scroll or pinch to zoom &nbsp;·&nbsp; Click anywhere outside to close</p>
+</div>
+
+<div class="page">
+
+  <header>
+    <div class="header-glow"></div>
+    <div class="badge">Self-Hosted Homelab</div>
+    <h1>VPS Homelab Stack</h1>
+    <p>
+      A fully automated self-hosted server running Docker containers behind
+      Nginx Proxy Manager — secure HTTPS access to every service via custom subdomains.
+    </p>
+    <div class="cmd-wrap">
+      <span class="cmd-label">Deploy</span>
+      <span class="cmd-text" id="header-cmd">bash &lt;(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)</span>
+      <button class="copy-btn" onclick="copyCmd('bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)', this)" title="Copy command">
+        📋 Copy
+      </button>
+    </div>
+  </header>
+
+  <section class="reveal">
+    <h2><span>🗺️</span> Architecture Diagram</h2>
+    <div class="diagram-outer" id="diagram-container">
+      <div class="diagram-toolbar">
+        <button class="toolbar-btn" onclick="openFullscreen()" title="View fullscreen">
+          ⛶ Fullscreen
+        </button>
+      </div>
+      <div class="diagram-scroll">
+        <div class="mermaid" id="main-diagram">
+graph TD
+    classDef internet fill:#0ea5e9,stroke:#0284c7,stroke-width:2px,color:#fff
+    classDef security fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+    classDef proxy    fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    classDef app      fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    classDef db       fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+    classDef mgmt     fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+
+    User["👤 User\n(Browser / Mobile Apps)"]:::internet
+    DNS["🌐 Custom Domain DNS\n*.yourdomain.com → VPS IP"]:::internet
+
+    subgraph VPS ["☁️ Ubuntu VPS"]
+      subgraph Sec ["🔒 Security Layer"]
+        UFW["🛡️ UFW Firewall\nPorts: 80 · 443 · 81 · 22"]:::security
+        Fail2Ban["🚨 Fail2Ban\nBrute Force Protection"]:::security
+      end
+      NPM["🔄 Nginx Proxy Manager\nSSL · Let's Encrypt · Routing"]:::proxy
+      subgraph Docker ["🐳 Docker Network: npm_default"]
+        subgraph S1 ["Storage & Files"]
+          Nextcloud["☁️ Nextcloud AIO\nnc.yourdomain.com · 11000"]:::app
+          FileBrowser["📁 FileBrowser\nfiles.yourdomain.com · 80"]:::app
+        end
+        subgraph S2 ["Security & Privacy"]
+          Vaultwarden["🔐 Vaultwarden\nvault.yourdomain.com · 80"]:::app
+        end
+        subgraph S3 ["Media"]
+          Immich["📸 Immich\nphotos.yourdomain.com · 2283"]:::app
+        end
+        subgraph S4 ["Management"]
+          Portainer["🐋 Portainer\nportainer.yourdomain.com · 9000"]:::mgmt
+        end
+        NC_DB[("Nextcloud\nPostgres + Redis")]:::db
+        Immich_DB[("Immich\nPostgres + Valkey\n+ ML Cache")]:::db
+      end
+    end
+
+    User     -->|"Types URL"| DNS
+    DNS      -->|"Resolves to VPS IP"| UFW
+    Fail2Ban -.->|"Bans bad IPs"| UFW
+    UFW      -->|"Port 443 HTTPS"| NPM
+    UFW      -->|"Port 81 Admin"| NPM
+    NPM -->|"nc.yourdomain.com"| Nextcloud
+    NPM -->|"vault.yourdomain.com"| Vaultwarden
+    NPM -->|"photos.yourdomain.com"| Immich
+    NPM -->|"files.yourdomain.com"| FileBrowser
+    NPM -->|"portainer.yourdomain.com"| Portainer
+    Nextcloud --- NC_DB
+    Immich    --- Immich_DB
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2><span>⚙️</span> How It Works</h2>
+    <div class="layer-grid">
+      <div class="layer-card l-dns">
+        <div class="layer-label">Layer 1 — DNS</div>
+        <div class="layer-name">Custom Domain</div>
+        <div class="layer-desc">Wildcard A record <code>*.yourdomain.com</code> points to your VPS IP. All subdomains resolve to the same server.</div>
+      </div>
+      <div class="layer-card l-fw">
+        <div class="layer-label">Layer 2 — Firewall</div>
+        <div class="layer-name">UFW</div>
+        <div class="layer-desc">Only ports 22 (SSH), 80, 443, and 81 are open. All other ports are blocked by default.</div>
+      </div>
+      <div class="layer-card l-f2b">
+        <div class="layer-label">Layer 3 — Brute Force</div>
+        <div class="layer-name">Fail2Ban</div>
+        <div class="layer-desc">Monitors SSH and web logs. Auto-bans IPs that exceed login failure thresholds using Docker-aware iptables rules.</div>
+      </div>
+      <div class="layer-card l-npm">
+        <div class="layer-label">Layer 4 — Proxy</div>
+        <div class="layer-name">Nginx Proxy Manager</div>
+        <div class="layer-desc">Routes each subdomain to the correct container by name. Handles Let's Encrypt SSL for all services automatically.</div>
+      </div>
+      <div class="layer-card l-docker">
+        <div class="layer-label">Layer 5 — Containers</div>
+        <div class="layer-name">Docker (npm_default)</div>
+        <div class="layer-desc">All services run isolated in Docker. Reachable only through NPM — no container is directly exposed to the internet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2><span>🧩</span> Services</h2>
+    <table class="services-table">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Subdomain</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="dot" style="background:#f59e0b;animation-delay:0s"></span><span class="svc-name">Nginx Proxy Manager</span></td>
+          <td><span class="svc-sub">npm.yourdomain.com</span></td>
+          <td>SSL gateway and routing hub — admin panel for all proxy config</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#38bdf8;animation-delay:0.2s"></span><span class="svc-name">Nextcloud AIO</span></td>
+          <td><span class="svc-sub">nc.yourdomain.com</span></td>
+          <td>Self-hosted Google Drive — files, calendar, contacts sync</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#34d399;animation-delay:0.4s"></span><span class="svc-name">Vaultwarden</span></td>
+          <td><span class="svc-sub">vault.yourdomain.com</span></td>
+          <td>Self-hosted Bitwarden — password manager for all devices</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#fb7185;animation-delay:0.6s"></span><span class="svc-name">Immich</span></td>
+          <td><span class="svc-sub">photos.yourdomain.com</span></td>
+          <td>Self-hosted Google Photos — photo and video backup with AI features</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#fbbf24;animation-delay:0.8s"></span><span class="svc-name">FileBrowser</span></td>
+          <td><span class="svc-sub">files.yourdomain.com</span></td>
+          <td>Web-based file manager to browse and manage VPS storage</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#a78bfa;animation-delay:1s"></span><span class="svc-name">Portainer</span></td>
+          <td><span class="svc-sub">portainer.yourdomain.com</span></td>
+          <td>Docker container management dashboard — monitor and control containers</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="reveal">
+    <h2><span>📐</span> The Golden Rule</h2>
+    <div class="rule-box">
+      <p>Every container joins the <strong>npm_default</strong> Docker network and uses <code>expose:</code> — never <code>ports:</code>. NPM is the only entry point from the internet. No container is directly reachable externally.</p>
+<pre>networks:
+  npm_net:
+    external: true
+    name: npm_default   # must be this exact name — always</pre>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2><span>🚀</span> Deploy on a Fresh VPS</h2>
+    <div class="deploy-box">
+      <h3>One command. Answer the prompts. Walk away.</h3>
+      <p>Installs Docker, UFW, Fail2Ban, NPM, and all selected services automatically.</p>
+      <div class="deploy-cmd-wrap">
+        <span class="deploy-cmd-text">bash &lt;(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)</span>
+        <button class="deploy-copy-btn" id="deploy-copy-btn"
+          onclick="copyCmd('bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)', this)">
+          📋 Copy
+        </button>
+      </div>
+      <div class="req-list">
+        <span class="req-pill">Ubuntu 22.04 / 24.04</span>
+        <span class="req-pill">Non-root sudo user</span>
+        <span class="req-pill">DNS records pointing to VPS IP</span>
+        <span class="req-pill">Domain you control</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Built with the
+      <a href="https://github.com/ulyweb/vps" target="_blank">VPS Community Installer</a>
+      &nbsp;·&nbsp;
+      Diagram rendered with <a href="https://mermaid.js.org" target="_blank">Mermaid.js</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  // ── Mermaid init ──────────────────────────────────────────────
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#1e293b',
+      primaryColor: '#10b981',
+      primaryTextColor: '#fff',
+      primaryBorderColor: '#059669',
+      lineColor: '#94a3b8',
+      secondaryColor: '#1e293b',
+      tertiaryColor: '#0f172a',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis', padding: 20 }
+  });
+
+  // ── Node tooltip data ─────────────────────────────────────────
+  const nodeInfo = {
+    'User':        { title: '👤 User',              desc: 'You — accessing from browser or mobile app' },
+    'DNS':         { title: '🌐 DNS',               desc: 'Wildcard *.yourdomain.com → VPS IP. All subdomains resolve here.' },
+    'UFW':         { title: '🛡️ UFW Firewall',      desc: 'Blocks all ports except 22, 80, 443, 81. First line of defense.' },
+    'Fail2Ban':    { title: '🚨 Fail2Ban',           desc: 'Auto-bans IPs with repeated login failures. Monitors SSH + web logs.' },
+    'NPM':         { title: '🔄 Nginx Proxy Manager',desc: 'Routes subdomains to containers. Manages Let\'s Encrypt SSL for all services.' },
+    'Nextcloud':   { title: '☁️ Nextcloud AIO',     desc: 'Self-hosted Google Drive. nc.yourdomain.com · Port 11000' },
+    'Vaultwarden': { title: '🔐 Vaultwarden',       desc: 'Self-hosted Bitwarden. vault.yourdomain.com · Port 80' },
+    'Immich':      { title: '📸 Immich',            desc: 'Self-hosted Google Photos. photos.yourdomain.com · Port 2283' },
+    'FileBrowser': { title: '📁 FileBrowser',       desc: 'Web file manager. files.yourdomain.com · Port 80' },
+    'Portainer':   { title: '🐋 Portainer',         desc: 'Docker management UI. portainer.yourdomain.com · Port 9000' },
+    'NC_DB':       { title: '🗄️ Nextcloud Database', desc: 'Internal Postgres + Redis — not exposed to the internet' },
+    'Immich_DB':   { title: '🗄️ Immich Database',   desc: 'Internal Postgres + Valkey + ML model cache — not exposed' },
+  };
+
+  const tooltip = document.getElementById('node-tooltip');
+
+  // Attach tooltips after Mermaid renders
+  function attachNodeTooltips(svgContainer) {
+    const nodes = svgContainer.querySelectorAll('.node');
+    nodes.forEach(node => {
+      const id = node.id || '';
+      
+      // Ignore the fullscreen suffix when trying to match keys
+      const baseId = id.replace(/-fs$/, '');
+      const match = Object.keys(nodeInfo).find(k =>
+        baseId.includes('-' + k + '-') || baseId === k || baseId.endsWith('-' + k)
+      );
+      
+      if (!match) return;
+      const info = nodeInfo[match];
+
+      node.style.cursor = 'pointer';
+
+      node.addEventListener('mouseenter', e => {
+        tooltip.innerHTML = `<strong>${info.title}</strong>${info.desc}`;
+        tooltip.classList.add('show');
+        moveTooltip(e);
+      });
+
+      node.addEventListener('mousemove', moveTooltip);
+
+      node.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('show');
+      });
+    });
+  }
+
+  function moveTooltip(e) {
+    const x = e.clientX + 14;
+    const y = e.clientY - 10;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    tooltip.style.left = (x + tw > window.innerWidth ? x - tw - 28 : x) + 'px';
+    tooltip.style.top  = (y + th > window.innerHeight ? y - th : y) + 'px';
+  }
+
+  // Wait for Mermaid to render, then attach interactions
+  const observer = new MutationObserver(() => {
+    const svg = document.querySelector('#diagram-container svg');
+    if (svg) {
+      observer.disconnect();
+      attachNodeTooltips(svg);
+    }
+  });
+  observer.observe(document.getElementById('diagram-container'), { childList: true, subtree: true });
+
+  // ── Fullscreen modal ──────────────────────────────────────────
+  const fsModal   = document.getElementById('fs-modal');
+  const fsContent = document.getElementById('fs-content');
+  const fsClose   = document.getElementById('fs-close');
+
+  function openFullscreen() {
+    const svg = document.querySelector('#diagram-container svg');
+    if (!svg) return;
+    const clone = svg.cloneNode(true);
+    
+    // Prevent duplicate IDs in the DOM by appending a suffix
+    if (clone.id) clone.id += '-fs';
+    clone.querySelectorAll('[id]').forEach(el => {
+      if (el.id) el.id += '-fs';
+    });
+
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.style.width  = '100%';
+    clone.style.height = 'auto';
+    clone.style.maxWidth = '1100px';
+    fsContent.innerHTML = '';
+    fsContent.appendChild(clone);
+    fsModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    
+    // Attach tooltips to cloned SVG too
+    attachNodeTooltips(clone);
+  }
+
+  function closeFullscreen() {
+    fsModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  fsClose.addEventListener('click', closeFullscreen);
+
+  fsModal.addEventListener('click', e => {
+    if (e.target === fsModal) closeFullscreen();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeFullscreen();
+  });
+
+  // ── Copy to clipboard ─────────────────────────────────────────
+  function copyCmd(textToCopy, btn) {
+    if (!navigator.clipboard) {
+      console.error('Clipboard API not available');
+      return;
+    }
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      btn.classList.add('copied');
+      showToast();
+      setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy to clipboard:', err);
+    });
+  }
+
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ── Scroll-reveal ─────────────────────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        revealObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  revealEls.forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
