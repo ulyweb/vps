@@ -89,8 +89,9 @@ graph TD
 | **Containers** | Docker (`npm_default`) | All services run isolated, only reachable through NPM |
 
 ---
+
 > [!tip]
-## Services
+> ## Services
 
 | Service | Subdomain | Purpose |
 |---------|-----------|---------|
@@ -102,8 +103,9 @@ graph TD
 | **Portainer** | `portainer.yourdomain.com` | Docker container management dashboard |
 
 ---
+
 > [!tip]
-## The Golden Rule
+> ## The Golden Rule
 
 Every container joins the `npm_default` Docker network and uses `expose:` (never `ports:`).
 NPM is the only entry point from the internet — no container is directly reachable externally.
@@ -116,8 +118,9 @@ networks:
 ```
 
 ---
+
 > [!tip]
-## Quick Deploy
+> ## Quick Deploy
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)
