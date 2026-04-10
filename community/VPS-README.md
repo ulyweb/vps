@@ -1,4 +1,5 @@
-# VPS Homelab Stack — Architecture & Traffic Flow
+> [!NOTE]
+> # VPS Homelab Stack — Architecture & Traffic Flow
 
 A self-hosted homelab running on Ubuntu VPS with Docker containers behind Nginx Proxy Manager. All services are accessible via secure HTTPS subdomains — no service is directly exposed to the internet.
 
@@ -76,7 +77,8 @@ graph TD
 
 ---
 
-## How It Works
+> [!tip]
+> ## How It Works
 
 | Layer | Component | Role |
 |-------|-----------|------|
@@ -87,7 +89,7 @@ graph TD
 | **Containers** | Docker (`npm_default`) | All services run isolated, only reachable through NPM |
 
 ---
-
+> [!tip]
 ## Services
 
 | Service | Subdomain | Purpose |
@@ -100,7 +102,7 @@ graph TD
 | **Portainer** | `portainer.yourdomain.com` | Docker container management dashboard |
 
 ---
-
+> [!tip]
 ## The Golden Rule
 
 Every container joins the `npm_default` Docker network and uses `expose:` (never `ports:`).
@@ -114,7 +116,7 @@ networks:
 ```
 
 ---
-
+> [!tip]
 ## Quick Deploy
 
 ```bash
