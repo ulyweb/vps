@@ -30,7 +30,7 @@ You can take sra-skin-install.sh + these two docs. When they want to change some
   ---                                                                                                                                                
 First Time (Starting Fresh)
                                                                                                                                                      
-When they open a new chat with any AI (ChatGPT, Claude, etc.), they paste both files and say:
+When you open a new chat with any AI (ChatGPT, Claude, etc.), paste both files and say:
 ````                                                                                                                                                   
 I'm setting up a luxury aesthetics studio website on my VPS. I've attached two files — the System Prompt is your job description and rules, the  
 Artifact is the full technical blueprint of everything that was built. Read both before responding. My first question is: [their question here]
