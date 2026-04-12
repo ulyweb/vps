@@ -1,8 +1,10 @@
-● All three deliverables done. Here's the status:
+> [!NOTE]
+> # Here are the three deliverables files:
+---
 
-sra-skin-install.sh — bash -n passes clean, no syntax errors.                                                                                      
+> ## sra-skin-install.sh — bash -n passes clean, no syntax errors.                                                                                      
   
-  SRA-SYSTEM-PROMPT.md — The AI job description covering:                                                                                            
+> ## SRA-SYSTEM-PROMPT.md — The AI job description covering:                                                                                            
   - Infrastructure map (container → NPM → UFW)   
   - 10 golden rules (never ports:, dark mode parity, booking URL fallback, slider clip pattern, etc.)                                                
   - Full design system: color palette, typography, spacing                                           
@@ -10,7 +12,7 @@ sra-skin-install.sh — bash -n passes clean, no syntax errors.
   - Placeholder injection system reference                                                                                                           
   - 6 known gotchas to avoid                                                                                                                         
                                                                                                                                                      
-  SRA-ARTIFACT.md — The complete technical blueprint covering:                                                                                       
+> ## SRA-ARTIFACT.md — The complete technical blueprint covering:                                                                                       
   - Full docker-compose.yml, nginx.conf                                                                                                              
   - Installer logic (escape function, monogram gen, booking URL logic)                                                                               
   - Every section with actual HTML snippets and CSS/JS code                                                                                          
@@ -22,7 +24,8 @@ sra-skin-install.sh — bash -n passes clean, no syntax errors.
 You can take sra-skin-install.sh + these two docs. When they want to change something later, they hand both docs to their AI and the AI will have everything it needs without you having to re-explain anything.   
 
 
-Here are the exact prompts you se, depending on what they need:                                                                  
+> [!TIP]
+> # Here are the exact prompts you use, depending on what they need:                                                                  
                                                                                                                                                    
   ---                                                                                                                                                
 First Time (Starting Fresh)
@@ -62,7 +65,8 @@ To add a new service:
 I want to add a 7th service card for "IV Therapy". Using the attached artifact, show me the card HTML to copy and what CSS change I need for the grid.                                        
 ````                                                                                                                                                     
   ---                                            
-The Key Rule to Tell Them                                                                                                                        
+> [!TIP]
+> # The Key Rule                                                                                                                        
 ````                                                                                                                                                     
 Always attach both files at the start of every new chat session. AIs don't remember previous conversations
 the docs ARE the memory. Without them, the AI will give generic advice that may conflict with how the site was actually built.                                      
