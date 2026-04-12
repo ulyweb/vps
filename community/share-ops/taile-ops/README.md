@@ -1,4 +1,4 @@
-Here are the exact prompts your co-worker would use, depending on what they need:                                                                  
+Here are the exact prompts you se, depending on what they need:                                                                  
                                                                                                                                                    
   ---                                                                                                                                                
 First Time (Starting Fresh)
