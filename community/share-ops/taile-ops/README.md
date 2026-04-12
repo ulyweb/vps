@@ -1,3 +1,27 @@
+● All three deliverables done. Here's the status:
+
+sra-skin-install.sh — bash -n passes clean, no syntax errors.                                                                                      
+  
+  SRA-SYSTEM-PROMPT.md — The AI job description covering:                                                                                            
+  - Infrastructure map (container → NPM → UFW)   
+  - 10 golden rules (never ports:, dark mode parity, booking URL fallback, slider clip pattern, etc.)                                                
+  - Full design system: color palette, typography, spacing                                           
+  - Every section description with what it does and how it behaves                                                                                   
+  - Placeholder injection system reference                                                                                                           
+  - 6 known gotchas to avoid                                                                                                                         
+                                                                                                                                                     
+  SRA-ARTIFACT.md — The complete technical blueprint covering:                                                                                       
+  - Full docker-compose.yml, nginx.conf                                                                                                              
+  - Installer logic (escape function, monogram gen, booking URL logic)                                                                               
+  - Every section with actual HTML snippets and CSS/JS code                                                                                          
+  - Before/After slider clip-container pattern (the critical implementation detail)                                                                  
+  - Testimonial carousel with full JS                                                                                                                
+  - Customization cheat sheet                                                                                                                        
+  - Deployment commands + troubleshooting table                                                                                                      
+                                                                                                                                                     
+You can take sra-skin-install.sh + these two docs. When they want to change something later, they hand both docs to their AI and the AI will have everything it needs without you having to re-explain anything.   
+
+
 Here are the exact prompts you se, depending on what they need:                                                                  
                                                                                                                                                    
   ---                                                                                                                                                
