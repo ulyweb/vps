@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS Homelab Stack - Secure Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        /* Modern Web Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            /* Secure Vault Dark Theme */
+            --bg-color: #0b1120;
+            --panel-bg: rgba(30, 41, 59, 0.85);
+            --panel-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            /* Status Colors */
+            --primary: #3b82f6;
+            --internet: #0ea5e9;
+            --security: #ef4444;
+            --proxy: #f59e0b;
+            --app: #10b981;
+            --danger: #ff003c;
+            
+            /* Glow Effects */
+            --primary-glow: rgba(14, 165, 233, 0.4);
+            --danger-glow: rgba(255, 0, 60, 0.3);
+            --app-glow: rgba(16, 185, 129, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 25%);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            width: 100%;
+            max-width: 1150px; 
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .header {
+            background: linear-gradient(to right, #0f172a, #1e293b);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .header h1 { 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p { font-size: 1rem; color: var(--text-muted); }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        button {
+            padding: 0.75rem 1.25rem;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-app { 
+            background: linear-gradient(135deg, #059669, #10b981);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+        }
+        .btn-app:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); 
+            border-color: #34d399;
+        }
+
+        .btn-danger { 
+            background: linear-gradient(135deg, #b91c1c, #ef4444);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+        }
+        .btn-danger:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            border-color: #f87171;
+        }
+        button:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .visualization {
+            position: relative;
+            height: 550px;
+            background: #0f172a;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            border-bottom: 1px solid var(--panel-border);
+            overflow: hidden;
+        }
+
+        #connections {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        
+        line { stroke: #334155; stroke-width: 2; stroke-dasharray: 4, 4; }
+
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            padding: 1.1rem 0.5rem;
+            border-radius: 12px;
+            background: #1e293b;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 2;
+            width: 160px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid var(--panel-border);
+            border-top: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover { transform: translate(-50%, -50%) scale(1.05); border-color: #475569; }
+        .node i { display: block; font-size: 1.6rem; margin-bottom: 0.5rem; font-style: normal; }
+        .node span { display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; font-family: 'JetBrains Mono', monospace; word-break: break-all;}
+
+        #node-internet { top: 12%; left: 50%; border-color: var(--internet); width: 180px; }
+        #node-firewall { top: 35%; left: 50%; border-color: var(--security); width: 240px; }
+        #node-npm { top: 58%; left: 50%; border-color: var(--proxy); width: 240px; }
+        #node-nc { top: 85%; left: 14%; border-color: var(--app); }
+        #node-vault { top: 85%; left: 32%; border-color: var(--app); }
+        #node-immich { top: 85%; left: 50%; border-color: var(--app); }
+        #node-filebrowser { top: 85%; left: 68%; border-color: var(--app); }
+        #node-portainer { top: 85%; left: 86%; border-color: var(--app); }
+
+        .packet {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #fff;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            opacity: 0;
+            box-shadow: 0 0 15px 4px rgba(255,255,255,0.6);
+        }
+
+        .scan-ring {
+            position: absolute;
+            top: 35%; left: 50%;
+            width: 280px; height: 110px;
+            border: 2px solid var(--danger);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 20px var(--danger-glow), 0 0 20px var(--danger-glow);
+        }
+
+        /* Information Sections */
+        .info-section {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #f8fafc;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* How it Works Grid */
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-card {
+            background: #1e293b;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .info-card:hover { border-color: #475569; transform: translateY(-2px); }
+
+        .card-layer {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        .layer-1 { color: #0ea5e9; }
+        .layer-2 { color: #ef4444; }
+        .layer-3 { color: #f87171; }
+        .layer-4 { color: #f59e0b; }
+        .layer-5 { color: #10b981; }
+
+        .info-card h3 { color: #f8fafc; font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .info-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+        .info-card code { font-family: 'JetBrains Mono', monospace; color: #cbd5e1; }
+
+        /* Services Table */
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .services-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+        .services-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+        .service-name { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        
+        .code-badge {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--internet);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Deploy Section */
+        .deploy-container {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.05);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            margin: 0 2rem 2rem 2rem;
+            text-align: center;
+        }
+        .deploy-container h3 {
+            font-size: 1.2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+        .deploy-container p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .code-block-wrapper {
+            display: flex;
+            align-items: stretch;
+            background: #0b1120;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto 1.5rem auto;
+        }
+        .code-content {
+            flex-grow: 1;
+            padding: 1rem 1.5rem;
+            color: #10b981;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            text-align: left;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-left: 1px solid var(--panel-border);
+            color: #38bdf8;
+            padding: 0 1.5rem;
+            border-radius: 0; /* Override generic button style */
+            text-transform: none;
+            font-weight: 500;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); transform: none; box-shadow: none; border-color: var(--panel-border); }
+        .requirements {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        .req-pill {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #cbd5e1;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* The Golden Rule */
+        .golden-rule {
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-left: 4px solid var(--proxy);
+            margin: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .golden-rule h2 { font-size: 1.4rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;}
+        .golden-rule p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+        .golden-rule code { 
+            background: rgba(0,0,0,0.5); 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            font-family: 'JetBrains Mono', monospace; 
+            color: #fcd34d;
+        }
+
+        .log-panel {
+            padding: 1.5rem 2rem;
+            background: #020617;
+            color: #e2e8f0;
+            height: 180px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        .log-entry { margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid #1e293b; animation: slideIn 0.3s; }
+        .log-time { color: #64748b; margin-right: 0.8rem; }
+        .log-info { color: #38bdf8; }
+        .log-success { color: #34d399; text-shadow: 0 0 8px rgba(52, 211, 153, 0.2); }
+        .log-warning { color: #fbbf24; }
+        .log-danger { color: #f87171; text-shadow: 0 0 8px rgba(248, 113, 113, 0.3); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header">
+        <h1>VPS Homelab Stack</h1>
+        <p>Fully automated self-hosted servers behind Nginx Proxy Manager</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn-app" onclick="simulateTraffic('nextcloud')">Nextcloud</button>
+        <button class="btn-app" onclick="simulateTraffic('vaultwarden')">Vaultwarden</button>
+        <button class="btn-app" onclick="simulateTraffic('immich')">Immich</button>
+        <button class="btn-app" onclick="simulateTraffic('filebrowser')">FileBrowser</button>
+        <button class="btn-app" onclick="simulateTraffic('portainer')">Portainer</button>
+        <button class="btn-danger" onclick="simulateTraffic('attack')">Brute Force</button>
+    </div>
+
+    <div class="visualization" id="vis-container">
+        <svg id="connections">
+            <line x1="50%" y1="12%" x2="50%" y2="35%" />
+            <line x1="50%" y1="35%" x2="50%" y2="58%" />
+            <line x1="50%" y1="58%" x2="14%" y2="85%" />
+            <line x1="50%" y1="58%" x2="32%" y2="85%" />
+            <line x1="50%" y1="58%" x2="50%" y2="85%" />
+            <line x1="50%" y1="58%" x2="68%" y2="85%" />
+            <line x1="50%" y1="58%" x2="86%" y2="85%" />
+        </svg>
+
+        <div class="node" id="node-internet">
+            👤<br>User
+            <span>Browser / Mobile App</span>
+        </div>
+        <div class="node" id="node-firewall">
+            🛡️<br>UFW & Fail2Ban
+            <span>Ports: 80, 443, 81, 22, 3478</span>
+        </div>
+        <div class="node" id="node-npm">
+            🔄<br>Nginx Proxy Manager
+            <span>npm_default Network Hub</span>
+        </div>
+        <div class="node" id="node-nc">
+            ☁️<br>Nextcloud AIO
+            <span>nc.yourdomain.com</span>
+        </div>
+        <div class="node" id="node-vault">
+            🔐<br>Vaultwarden
+            <span>vault.yourdomain.com</span>
+        </div>
+        <div class="node" id="node-immich">
+            📸<br>Immich
+            <span>photos.yourdomain.com</span>
+        </div>
+        <div class="node" id="node-filebrowser">
+            📁<br>FileBrowser
+            <span>files.yourdomain.com</span>
+        </div>
+        <div class="node" id="node-portainer">
+            🐋<br>Portainer
+            <span>portainer.yourdomain.com</span>
+        </div>
+
+        <div class="scan-ring" id="firewall-ring"></div>
+        <div class="packet" id="packet"></div>
+    </div>
+
+    <div class="log-panel" id="log-panel">
+        <div class="log-entry">
+            <span class="log-time">[System]</span> 
+            <span class="log-info">Secure VPS Stack initialized. Awaiting simulation inputs.</span>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2 class="section-title">⚙️ How It Works</h2>
+        <div class="how-grid">
+            <div class="info-card">
+                <div class="card-layer layer-1">Layer 1 — DNS</div>
+                <h3>Custom Domain</h3>
+                <p>Wildcard A record <code>*.yourdomain.com</code> points to your VPS IP. All subdomains resolve to the same server.</p>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-layer layer-2">Layer 2 — Firewall</div>
+                <h3>UFW</h3>
+                <p>Only ports 22 (SSH), 80, 443, 81, and 3478 (Nextcloud Talk) are open. All other ports are blocked by default.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-layer layer-3">Layer 3 — Brute Force</div>
+                <h3>Fail2Ban</h3>
+                <p>Monitors SSH and web logs. Auto-bans IPs that exceed login failure thresholds using Docker-aware iptables rules.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-layer layer-4">Layer 4 — Proxy</div>
+                <h3>Nginx Proxy Manager</h3>
+                <p>Routes each subdomain to the correct container by name. Handles Let's Encrypt SSL for all services automatically.</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-layer layer-5">Layer 5 — Containers</div>
+                <h3>Docker (npm_default)</h3>
+                <p>All services run isolated in Docker. Reachable only through NPM — no container is directly exposed to the internet.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2 class="section-title">🧩 Services</h2>
+        <div style="overflow-x: auto;">
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Subdomain</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #f59e0b;"></span>Nginx Proxy Manager</div></td>
+                        <td><span class="code-badge">npm.yourdomain.com</span></td>
+                        <td>SSL gateway and routing hub — admin panel for all proxy config</td>
+                    </tr>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #0ea5e9;"></span>Nextcloud AIO</div></td>
+                        <td><span class="code-badge">nc.yourdomain.com</span></td>
+                        <td>Self-hosted Google Drive — files, calendar, contacts sync</td>
+                    </tr>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #10b981;"></span>Vaultwarden</div></td>
+                        <td><span class="code-badge">vault.yourdomain.com</span></td>
+                        <td>Self-hosted Bitwarden — password manager for all devices</td>
+                    </tr>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #ec4899;"></span>Immich</div></td>
+                        <td><span class="code-badge">photos.yourdomain.com</span></td>
+                        <td>Self-hosted Google Photos — photo and video backup with AI features</td>
+                    </tr>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #eab308;"></span>FileBrowser</div></td>
+                        <td><span class="code-badge">files.yourdomain.com</span></td>
+                        <td>Web-based file manager to browse and manage VPS storage</td>
+                    </tr>
+                    <tr>
+                        <td><div class="service-name"><span class="dot" style="background: #8b5cf6;"></span>Portainer</div></td>
+                        <td><span class="code-badge">portainer.yourdomain.com</span></td>
+                        <td>Docker container management dashboard — monitor and control containers</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="padding: 0 2rem; margin-top: 1.5rem;">
+        <h2 class="section-title">🚀 Deploy on a Fresh VPS</h2>
+    </div>
+    <div class="deploy-container">
+        <h3>One command. Answer the prompts. Walk away.</h3>
+        <p>Installs Docker, UFW, Fail2Ban, NPM, and all selected services automatically.</p>
+        
+        <div class="code-block-wrapper">
+            <div class="code-content" id="installCmd">bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)</div>
+            <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+        </div>
+
+        <div class="requirements">
+            <span class="req-pill">Ubuntu 22.04 / 24.04</span>
+            <span class="req-pill">Non-root sudo user</span>
+            <span class="req-pill">DNS records pointing to VPS IP</span>
+            <span class="req-pill">Domain you control</span>
+        </div>
+    </div>
+
+    <div class="golden-rule">
+        <h2>📐 The Golden Rule</h2>
+        <p>Every container joins the <code>npm_default</code> Docker network and uses <code>expose:</code> — never <code>ports:</code>. NPM is the only entry point from the internet. No container is directly reachable externally.</p>
+    </div>
+</div>
+
+<script>
+    function addLog(message, type = 'info') {
+        const panel = document.getElementById('log-panel');
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${message}</span>`;
+        panel.prepend(entry);
+    }
+
+    function simulateTraffic(type) {
+        document.querySelectorAll('button').forEach(b => b.disabled = true);
+        const packet = document.getElementById('packet');
+        const ring = document.getElementById('firewall-ring');
+        
+        anime.set(packet, { left: '50%', top: '12%', opacity: 1, scale: 1, backgroundColor: '#0ea5e9', boxShadow: '0 0 15px 4px rgba(14, 165, 233, 0.6)' });
+
+        const tl = anime.timeline({
+            easing: 'easeInOutSine',
+            complete: () => { document.querySelectorAll('.controls button').forEach(b => b.disabled = false); }
+        });
+
+        tl.add({
+            targets: packet,
+            top: '35%',
+            duration: 600,
+            begin: () => addLog('Incoming connection request hitting VPS public IP.', 'info')
+        });
+
+        if (type === 'attack') {
+            tl.add({
+                targets: packet,
+                scale: 1.5,
+                duration: 400,
+                begin: () => {
+                    addLog('WARNING: Repeated failed auth attempts detected.', 'warning');
+                    anime({ targets: ring, scale: [0, 1.3], opacity: [0.8, 0], duration: 800, easing: 'easeOutExpo' });
+                }
+            }).add({
+                targets: packet,
+                backgroundColor: '#ef4444',
+                boxShadow: '0 0 20px 8px rgba(239, 68, 68, 0.8)',
+                scale: [1.5, 2.5],
+                opacity: 0,
+                duration: 400,
+                begin: () => addLog('Fail2Ban triggered. UFW explicitly dropping IP address.', 'danger')
+            });
+            return;
+        }
+
+        tl.add({
+            targets: packet,
+            top: '58%',
+            duration: 600,
+            begin: () => addLog('Traffic cleared UFW (Port 443). Handed off to Nginx Proxy Manager.', 'info')
+        });
+
+        tl.add({
+            targets: packet,
+            scale: 1.4,
+            duration: 400,
+            begin: () => addLog('NPM evaluating subdomain, confirming Let\'s Encrypt SSL...', 'info')
+        });
+
+        const routeColor = '#10b981';
+        const routeShadow = '0 0 15px 4px rgba(16, 185, 129, 0.6)';
+
+        const routes = {
+            'nextcloud': { left: '14%', msg: 'Routing nc.yourdomain.com -> Nextcloud AIO (VM container) via npm_default.' },
+            'vaultwarden': { left: '32%', msg: 'Routing vault.yourdomain.com -> Vaultwarden container via npm_default.' },
+            'immich': { left: '50%', msg: 'Routing photos.yourdomain.com -> Immich container via npm_default.' },
+            'filebrowser': { left: '68%', msg: 'Routing files.yourdomain.com -> FileBrowser container via npm_default.' },
+            'portainer': { left: '86%', msg: 'Routing portainer.yourdomain.com -> Portainer container via npm_default.' }
+        };
+
+        const r = routes[type];
+        if (r) {
+            tl.add({
+                targets: packet,
+                left: r.left, top: '85%', scale: 1, backgroundColor: routeColor, boxShadow: routeShadow,
+                duration: 800,
+                begin: () => addLog(r.msg, 'success')
+            }).add({ targets: packet, opacity: 0, duration: 200 });
+        }
+    }
+
+    function copyCode() {
+        const text = "bash <(curl -fsSL https://raw.githubusercontent.com/ulyweb/vps/refs/heads/main/community/vps-community-install.sh)";
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Copied';
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+</script>
+
+</body>
+</html>
